@@ -2,6 +2,7 @@ import { useDrop } from "react-dnd";
 import { useState } from "react";
 import { Rnd } from "react-rnd";
 import { ItemTypes } from "./Sidebar";
+import { useRef } from "react";
 
 interface InputItem {
   id: string;
@@ -24,7 +25,7 @@ const Canvas = ({
 }) => {
   const [items, setItems] = useState<InputItem[]>([]);
   const [bgImage, setBgImage] = useState<string | null>(null);
-
+  const containerRef = useRef<HTMLDivElement>(null);
   const [, drop] = useDrop(() => ({
     accept: ItemTypes.INPUT,
     drop: (item: { id: string; label: string }, monitor) => {
@@ -82,7 +83,7 @@ const Canvas = ({
     setItems(prev => prev.filter(i => i.id !== id));
   };
   
-  const handleDragStop = (e, d, item: InputItem) => {
+  const handleDragStop = (_e: any, d: any, item: InputItem) => {
     const container = document.getElementById("canvas-container")?.getBoundingClientRect();
     if (!container) return;
   
@@ -129,7 +130,10 @@ const Canvas = ({
 
       <div
         id="canvas-container"
-        ref={drop}
+        ref={container => {
+          drop(containerRef); // connect drop to the ref
+          containerRef.current = container; // assign DOM ref manually
+        }}
         className="relative w-[794px] h-[1123px] mx-auto border border-gray-400 print:border-none print:scale-[1] print:overflow-hidden bg-white"
         >
         {bgImage && (
@@ -146,7 +150,7 @@ const Canvas = ({
           size={{ width: item.width, height: item.height }}
           position={{ x: item.x, y: item.y }}
           onDragStop={(e, d) => handleDragStop(e, d, item)}
-          onResizeStop={(e, direction, ref, delta, position) => {
+          onResizeStop={(_e: any, _direction: any, ref, _delta: any, position) => {
             setItems(prev =>
               prev.map(i =>
                 i.id === item.id
