@@ -14,7 +14,7 @@ interface InputItem {
 }
 
 const Canvas = ({
-  availableFields,
+  // availableFields,
   setAvailableFields,
 }: {
   availableFields: { id: string; label: string }[];
