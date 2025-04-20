@@ -121,6 +121,27 @@ const Canvas = ({
     localStorage.setItem("contractInputs", JSON.stringify(items));
   };
 
+  const handleClear = () => {
+    // Remove localStorage data
+    localStorage.removeItem("contractBg");
+    localStorage.removeItem("contractInputs");
+  
+    // Reset background
+    setBgImage(null);
+  
+    // Return inputs back to the sidebar
+    setAvailableFields(prev => {
+      const restoredFields = items.map(item => ({ id: item.id, label: item.label }));
+      const newFields = restoredFields.filter(
+        restored => !prev.find(existing => existing.id === restored.id)
+      );
+      return [...prev, ...newFields];
+    });
+  
+    // Clear inputs
+    setItems([]);
+  };
+
   useEffect(() => {
     const savedBg = localStorage.getItem("contractBg");
     const savedInputs = localStorage.getItem("contractInputs");
@@ -158,6 +179,12 @@ const Canvas = ({
           className="px-4 py-2 bg-green-600 text-white rounded"
         >
           Save
+        </button>
+        <button
+          onClick={handleClear}
+          className="px-4 py-2 bg-red-600 text-white rounded"
+        >
+          Clear
         </button>
         <button
           onClick={() => navigate("/preview")}
