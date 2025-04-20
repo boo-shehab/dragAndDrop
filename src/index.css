@@ -17,5 +17,7 @@
     width: 210mm;
     height: 297mm;
     background: white !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
   }
 }

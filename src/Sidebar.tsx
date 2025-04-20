@@ -18,9 +18,8 @@ const DraggableInput = ({ label, id }: Field) => {
     }),
   }));
 
-  return (
+  return drag(
     <div
-      ref={drag as unknown as React.Ref<HTMLDivElement>}
       className="p-2 border border-gray-400 bg-white rounded cursor-move mb-2"
       style={{ opacity: isDragging ? 0.5 : 1 }}
     >

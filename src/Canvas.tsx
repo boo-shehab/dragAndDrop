@@ -1,8 +1,8 @@
 import { useDrop } from "react-dnd";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Rnd } from "react-rnd";
 import { ItemTypes } from "./Sidebar";
-import { useRef } from "react";
+import { useNavigate } from "react-router-dom";
 
 interface InputItem {
   id: string;
@@ -25,8 +25,8 @@ const Canvas = ({
 }) => {
   const [items, setItems] = useState<InputItem[]>([]);
   const [bgImage, setBgImage] = useState<string | null>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
-  const [, drop] = useDrop(() => ({
+  const navigate = useNavigate();
+  const [, drop]: any = useDrop(() => ({
     accept: ItemTypes.INPUT,
     drop: (item: { id: string; label: string }, monitor) => {
       const offset = monitor.getClientOffset();
@@ -116,6 +116,33 @@ const Canvas = ({
     window.print();
   };
 
+  const handleSave = () => {
+    localStorage.setItem("contractBg", bgImage || "");
+    localStorage.setItem("contractInputs", JSON.stringify(items));
+  };
+
+  useEffect(() => {
+    const savedBg = localStorage.getItem("contractBg");
+    const savedInputs = localStorage.getItem("contractInputs");
+  
+    if (savedBg) {
+      setBgImage(savedBg);
+    }
+  
+    if (savedInputs) {
+      try {
+        const parsedItems: InputItem[] = JSON.parse(savedInputs);
+        setItems(parsedItems);
+  
+        // Remove used fields from availableFields
+        setAvailableFields(prev =>
+          prev.filter(field => !parsedItems.some(item => item.id === field.id))
+        );
+      } catch (e) {
+        console.error("Failed to parse saved inputs:", e);
+      }
+    }
+  }, []);
   return (
     <div className="flex-1 p-4 overflow-auto">
       <div className="mb-4 flex gap-4">
@@ -126,23 +153,32 @@ const Canvas = ({
         >
           Print
         </button>
+        <button
+          onClick={handleSave}
+          className="px-4 py-2 bg-green-600 text-white rounded"
+        >
+          Save
+        </button>
+        <button
+          onClick={() => navigate("/preview")}
+          className="px-4 py-2 bg-purple-600 text-white rounded"
+        >
+          Show
+        </button>
       </div>
 
       <div
         id="canvas-container"
-        ref={container => {
-          drop(containerRef); // connect drop to the ref
-          containerRef.current = container; // assign DOM ref manually
-        }}
+        ref={drop}
         className="relative w-[794px] h-[1123px] mx-auto border border-gray-400 print:border-none print:scale-[1] print:overflow-hidden bg-white"
         >
         {bgImage && (
-            <img
+          <img
             src={bgImage}
-            alt="Contract Background"
+            alt="Background"
             className="absolute top-0 left-0 w-full h-full object-cover print:block"
             style={{ zIndex: 0 }}
-            />
+          />
         )}
         {items.map(item => (
           <Rnd
@@ -168,7 +204,7 @@ const Canvas = ({
           bounds="parent"
         >
           <input
-            className="w-full h-full p-2 border border-gray-600 bg-white"
+            className="w-full h-full p-2 border border-gray-600 bg-transparent text-xs"
             placeholder={item.label}
             value={item.value}
             onChange={e => handleChange(item.id, e.target.value)}
